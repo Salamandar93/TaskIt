@@ -1,11 +1,18 @@
 package com.danielan.taskit;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -22,15 +29,44 @@ public class TaskListActivity extends Activity {
         items[0].setName("Task 1");
         items[1] = new Task();
         items[1].setName("Task 2");
+        items[1].setDone(true);
         items[2] = new Task();
         items[2].setName("Task 3");
         ListView listView = (ListView) findViewById(R.id.task_list);
         listView.setAdapter(new TaskAdapter(items));
+
+        /**
+         * Listener for each item
+         */
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(TaskListActivity.this, TaskActivity.class);
+                Task task = (Task) parent.getAdapter().getItem(position);
+                i.putExtra(TaskActivity.EXTRA, task);
+                startActivity(i);
+            }
+        });
     }
 
     private class TaskAdapter extends ArrayAdapter<Task> {
         TaskAdapter(Task[] tasks) {
-            super(TaskListActivity.this, android.R.layout.simple_list_item_1, tasks);
+            super(TaskListActivity.this, R.layout.task_list_row, R.id.task_item_name, tasks);
+        }
+
+        @Override
+        /**
+         * To use something other than TextViews for the array display, for instance, ImageViews, or to have some of data besides toString() results fill the views, override getView(int, View, ViewGroup) to return the type of view you want.
+         */
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = super.getView(position, convertView, parent);
+            Task task = getItem(position);
+            TextView taskName = (TextView) convertView.findViewById(R.id.task_item_name);
+            taskName.setText(task.getName());
+
+            CheckBox doneBox = (CheckBox) convertView.findViewById(R.id.task_item_done);
+            doneBox.setChecked(task.isDone());
+            return convertView;
         }
     }
 
