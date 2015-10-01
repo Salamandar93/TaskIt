@@ -2,6 +2,7 @@ package com.danielan.taskit;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class TaskActivity extends Activity {
 
@@ -23,6 +25,8 @@ public class TaskActivity extends Activity {
     private Calendar mCal;
     private Task mTask;
     private Button mDateButton;
+    private EditText mTaskNameInput;
+    private CheckBox mDoneBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,22 +34,21 @@ public class TaskActivity extends Activity {
         setContentView(R.layout.activity_task);
 
         mTask = (Task) getIntent().getSerializableExtra(EXTRA);
-
         mCal = Calendar.getInstance();
-        mCal.setTime(mTask.getDueDate());
 
-        EditText taskNameInput = (EditText) findViewById(R.id.task_name);
+        mTaskNameInput = (EditText) findViewById(R.id.task_name);
         mDateButton = (Button) findViewById(R.id.task_date);
-        CheckBox doneBox = (CheckBox) findViewById(R.id.task_done);
+        mDoneBox = (CheckBox) findViewById(R.id.task_done);
         Button saveButton = (Button) findViewById(R.id.save_button);
 
-        taskNameInput.setText(mTask.getName());
+        mTaskNameInput.setText(mTask.getName());
         if (mTask.getDueDate() == null) {
             mDateButton.setText(getResources().getString(R.string.no_date));
         } else {
+            mCal.setTime(mTask.getDueDate());
             updateButton();
         }
-        doneBox.setChecked(mTask.isDone());
+        mDoneBox.setChecked(mTask.isDone());
 
         mDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,7 +68,14 @@ public class TaskActivity extends Activity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mTask.setName(mTaskNameInput.getText().toString());
+                mTask.setDone(mDoneBox.isChecked());
+                mTask.setDueDate(mCal.getTime());
 
+                Intent i = new Intent();
+                i.putExtra(EXTRA, mTask);
+                setResult(RESULT_OK, i);
+                finish();
             }
         });
     }
